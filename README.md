@@ -1,6 +1,6 @@
 # GeisPointService
 
-
+[![Build Status](https://travis-ci.org/ondrejd/GeisPointService.svg)](https://travis-ci.org/ondrejd/GeisPointService)
 
 PHP implementace klienta pro webovou službu [GeisPoint](http://www.geispoint.cz/).
 
