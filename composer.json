@@ -1,0 +1,32 @@
+{
+	"name": "ondrejd/geis-point-service",
+	"description": "PHP implementace klienta pro webovou službu GeisPoint.",
+	"homepage": "https://github.com/ondrejd/GeisPointService",
+	"type": "library",
+	"license": "MPL-2.0",
+	"keywords": ["web service","Geis Point"],
+	"authors": [
+		{
+			"name": "Ondřej Doněk",
+			"email": "donek.ebrana@gmail.com",
+			"role": "Developer"
+		}
+	],
+	"repositories": [{
+		"type": "vcs",
+		"url": "https://github.com/ondrejd/GeisPointService"
+	}],
+	"minimum-stability": "stable",
+	"autoload": {
+		"psr-0": {
+			"GeisPointService\\": "src/GeisPointService/"
+		},
+		"classmap": [
+			"./"
+		]
+	},
+	"require": {
+		"php": ">=5.3",
+		"ext-soap": "*"
+	}
+}
