@@ -12,6 +12,7 @@ namespace GeisPointService;
  * Simple class describing region.
  *
  * @author Ondřej Doněk, <ondrej.donek@ebrana.cz>
+ * @link http://www.geisparcel.cz/support/files/Geis_GeisPoint_WS.pdf
  */
 class Region
 {
@@ -28,18 +29,42 @@ class Region
 	/**
 	 * Constructor.
 	 *
-	 * @param integer $id_region (Optional.)
-	 * @param string $name (Optional.)
+	 * @param mixed $data
 	 * @return void
 	 */
-	public function __construct($id_region = null, $name = null)
+	public function __construct($data = array())
 	{
-		if (!is_null($id_region) && !empty($id_region) && is_numeric($id_region)) {
-			$this->id_region = intval($id_region);
+		if (is_object($data)) {
+			$data = (array) $data;
 		}
 
-		if (!is_null($name) && !empty($name) && is_string($name)) {
-			$this->name = trim($name);
+		$data = $this->normalizeData($data);
+
+		if (/*!empty($data['id_region']) && */is_numeric($data['id_region'])) {
+			$this->id_region = (int) $data['id_region'];
 		}
+
+		if (is_string($data['name'])) {
+			$this->name = trim((string) $data['name']);
+		}
+	}
+
+	/**
+	 * Normalizes input data array.
+	 *
+	 * @param array $data
+	 * @return array
+	 */
+	protected function normalizeData($data = array())
+	{
+		if (!array_key_exists('id_region', $data)) {
+			$data['id_region'] = null;
+		}
+
+		if (!array_key_exists('name', $data)) {
+			$data['name'] = null;
+		}
+
+		return $data;
 	}
 }

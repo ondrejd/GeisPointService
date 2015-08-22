@@ -13,34 +13,43 @@ __TBD__
 
 ## Použití
 
-Nejprve rychlý příklad:
+Nejprve rychlý příklad. Následující skript:
 
 ```php
 <?php
 require 'vendor/autoload.php';
 
 $gpsrv = new \GeisPointService\Service();
-$regions = $gpsrv->getRegions();
-var_dump($regions);
 
-// `var_dump` by mel vypsat pole podobne nasledujicimu (zkraceno):
-//array(14) {
-//  [19] =>
-//  class GeisPointService\Region#18 (2) {
-//    public $id_region =>
-//    int(19)
-//    public $name =>
-//    string(12) "Hl. m. Praha"
-//  }
-//  [27] =>
-//  class GeisPointService\Region#19 (2) {
-//    public $id_region =>
-//    int(27)
-//    public $name =>
-//    string(19) "Středočeský kraj"
-//  }
-//  ...
-//}
+// Získáme všechny regiony
+$regions = $gpsrv->getRegions();
+echo 'Počet regionů: '.count($regions).PHP_EOL;
+
+// Vybereme náhodný region
+$region = $regions[rand(0, count($regions) - 1)];
+echo 'Města regionu '.$region->name.PHP_EOL;
+
+// Vybereme města zvoleného regionu
+$cities = $gpsrv->getCities(null, $region->id_region);
+echo 'Počet měst: '.count($cities).PHP_EOL;
+
+// Vybereme náhodné město
+$city = $cities[rand(0, count($cities) - 1)];
+echo 'Výdejní místa pro město '.$city->city.PHP_EOL;
+
+// Najdeme výdejní místa v daném městě
+$points = $gpsrv->searchPoints(null, $city->city, null);
+echo 'Počet výdejních míst: '.count($points).PHP_EOL;
+```
+
+by měl vypsat následující výstup (konkrétní hodnoty se mohou lišit):
+
+```
+Počet regionů: 14
+Města regionu Vysočina
+Počet měst: 18
+Výdejní místa pro město Havlíčkův Brod
+Počet výdejních míst: 2
 ```
 
 ### Konfigurace

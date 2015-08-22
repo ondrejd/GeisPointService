@@ -10,6 +10,9 @@ namespace GeisPointService;
 
 /**
  * Interface describing the service.
+ * 
+ * @author Ondřej Doněk, <ondrej.donek@ebrana.cz>
+ * @link http://www.geisparcel.cz/support/files/Geis_GeisPoint_WS.pdf
  */
 interface ServiceInterface
 {
@@ -33,10 +36,11 @@ interface ServiceInterface
 	/**
 	 * Returns detail informations about single Geis Point.
 	 *
-	 * @param string $gpId
-	 * @return array
+	 * @param string $gpid
+	 * @return Point
+	 * @throws \InvalidArgumentException
 	 */
-	public function getPointDetail($gpId);
+	public function getPointDetail($gpid);
 
 	/**
 	 * Performs search for Geis Points. At least one parameter MUST be passed.
@@ -45,6 +49,7 @@ interface ServiceInterface
 	 * @param string $city
 	 * @param string $gpId
 	 * @return array
+	 * @throws \InvalidArgumentException
 	 */
-	public function searchPoints($zip, $city, $gpId);
+	public function searchPoints($zip, $city, $gpid);
 }

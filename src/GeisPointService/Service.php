@@ -12,6 +12,7 @@ namespace GeisPointService;
  * Class that implements client of GeisPoint service.
  *
  * @author Ondřej Doněk, <ondrej.donek@ebrana.cz>
+ * @link http://www.geisparcel.cz/support/files/Geis_GeisPoint_WS.pdf
  */
 class Service implements ServiceInterface
 {
@@ -72,6 +73,9 @@ class Service implements ServiceInterface
 				: self::DEFAULT_REGION;
 
 		// TODO Cache!
+		if (array_key_exists('cache', $options)) {
+			// ...
+		}
 
 		$this->client = new \SoapClient(self::URL);
 	}
@@ -89,28 +93,26 @@ class Service implements ServiceInterface
 	/**
 	 * Retrieve regions.
 	 *
-	 * @param string $countryCode
+	 * @param string $country (Optional.)
 	 * @return array
 	 * @todo Add cache!
 	 */
-	public function getRegions($countryCode = null)
+	public function getRegions($country = null)
 	{
-		$code = (is_null($countryCode) || empty($countryCode))
+		$country = (is_null($country) || empty($country))
 			? $this->defaultCountry
-			: $countryCode;
+			: $country;
 
-		$arguments = array('country_code' => $code);
+		$arguments = array('country_code' => $country);
 
 		$json = $this->client->__soapCall('getRegions', $arguments);
-		$arr = json_decode($json);
+		$data = json_decode($json);
 		$ret = array();
 
-		foreach ($arr as $itm) {
-			if (!is_object($itm)) continue;
-			if (!isset($itm->id_region) || !isset($itm->name)) continue;
-
-			$id = $itm->id_region;
-			$ret[$id] = new \GeisPointService\Region($id, $itm->name);
+		foreach ($data as $itm) {
+			if (is_object($itm)) {
+				$ret[] = new Region($itm);
+			}
 		}
 
 		return $ret;
@@ -119,31 +121,30 @@ class Service implements ServiceInterface
 	/**
 	 * Retrieve cities for the specified region.
 	 *
-	 * @param string $countryCode
-	 * @param integer $regionId
+	 * @param string $country (Optional.)
+	 * @param integer $region (Optional.)
 	 * @return array
 	 */
-	public function getCities($countryCode = null, $regionId = null)
+	public function getCities($country = null, $region = null)
 	{
-		$code = (is_null($countryCode) || empty($countryCode))
+		$country = (is_null($country) || empty($country))
 			? $this->defaultCountry
-			: $countryCode;
+			: $country;
 
-		$region = (is_null($regionId) || empty($regionId))
+		$region = (is_null($region) || empty($region))
 			? $this->defaultRegion
-			: $regionId;
+			: $region;
 
-		$arguments = array('country_code' => $code, 'id_region' => $region);
+		$arguments = array('country_code' => $country, 'id_region' => $region);
 
-		$json = $this->client->__soapCall('getRegions', $arguments);
-		$arr = json_decode($json);
+		$json = $this->client->__soapCall('getCities', $arguments);
+		$data = json_decode($json);
 		$ret = array();
 
-		foreach ($arr as $itm) {
-			if (!is_object($itm)) continue;
-			if (!isset($itm->id_region) || !isset($itm->city)) continue;
-
-			$ret[$id] = new \GeisPointService\City($itm->id_region, $itm->city);
+		foreach ($data as $itm) {
+			if (is_object($itm)) {
+				$ret[] = new City($itm);
+			}
 		}
 
 		return $ret;
@@ -152,12 +153,29 @@ class Service implements ServiceInterface
 	/**
 	 * Returns detail informations about single Geis Point.
 	 *
-	 * @param string $gpId
-	 * @return array
+	 * @param string $gpid
+	 * @return \GeisPointService\Point
+	 * @throws \InvalidArgumentException
 	 */
-	public function getPointDetail($gpId)
+	public function getPointDetail($gpid)
 	{
-		// ...
+		if (!is_string($gpid)) {
+			throw new \InvalidArgumentException();
+		}
+
+		if (empty($gpid)) {
+			throw new \InvalidArgumentException();
+		}
+
+		$arguments = array('id_gp' => (string) $gpid);
+		$json = $this->client->__soapCall('getGPDetail', $arguments);
+		$data = json_decode($json);
+
+		if (count($data) === 1) {
+			return new Point($data[0]);
+		}
+
+		throw new Exception('GeisPoint details was not found!');
 	}
 
 	/**
@@ -165,11 +183,45 @@ class Service implements ServiceInterface
 	 *
 	 * @param string $zip
 	 * @param string $city
-	 * @param string $gpId
+	 * @param string $gpid
 	 * @return array
+	 * @throws \InvalidArgumentException
 	 */
-	public function searchPoints($zip, $city, $gpId)
+	public function searchPoints($zip, $city, $gpid)
 	{
-		// ...
+		$arguments = array();
+
+		if (!empty($zip)) {
+			$arguments['zip'] = $zip;
+		}
+
+		if (!empty($city)) {
+			$arguments['city'] = $city;
+		}
+
+		if (!empty($gpid)) {
+			$arguments['id_gp'] = $gpid;
+		}
+
+		if (count($arguments) === 0) {
+			throw new \InvalidArgumentException();
+		}
+
+		$arguments = array_merge(
+			array('zip' => '', 'city' => '', 'id_gp' => ''),
+			$arguments
+		);
+
+		$json = $this->client->__soapCall('searchGP', $arguments);
+		$data = json_decode($json);
+		$ret = array();
+
+		foreach ($data as $itm) {
+			if (is_object($itm)) {
+				$ret[] = new Point($itm);
+			}
+		}
+
+		return $ret;
 	}
 }
