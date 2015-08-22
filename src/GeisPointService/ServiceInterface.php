@@ -19,19 +19,19 @@ interface ServiceInterface
 	/**
 	 * Retrieve regions.
 	 *
-	 * @param string $countryCode
+	 * @param string $country (Optional.)
 	 * @return array
 	 */
-	public function getRegions($countryCode);
+	public function getRegions($country = null);
 
 	/**
 	 * Retrieve cities for the specified region.
 	 *
-	 * @param string $countryCode
-	 * @param integer $regionId
+	 * @param string $country (Optional.)
+	 * @param integer $region (Optional.)
 	 * @return array
 	 */
-	public function getCities($countryCode, $regionId);
+	public function getCities($country = null, $region = null);
 
 	/**
 	 * Returns detail informations about single Geis Point.
