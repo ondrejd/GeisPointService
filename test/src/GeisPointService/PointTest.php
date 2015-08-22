@@ -90,11 +90,11 @@ class PointTest extends \PHPUnit_Framework_TestCase
 		$this->assertEquals('ČR', $point->country);
 		$this->assertEquals('724 594 485', $point->phone);
 		$this->assertEquals('Po-So 7:00-13:00;13:30-18:00;18:30-20:30, So 8:00-13:00;13:30-18:00;18:30-20:30', $point->openining_hours);
-		$this->assertEmpty('', $point->holiday);
+		$this->assertEmpty($point->holiday);
 		$this->assertEquals('http://mapy.cz/s/7RPJ', $point->map_url);
 		$this->assertEquals('50.04269083682189', $point->gpsn);
 		$this->assertEquals('14.314704325656166', $point->gpse);
 		$this->assertEquals('http://data.e-shoppartner.cz/download/fotovydejny/58781280.jpg', $point->photo_url);
-		$this->assertEmpty('', $point->note);
+		$this->assertEmpty($point->note);
 	}
 }
