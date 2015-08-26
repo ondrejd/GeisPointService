@@ -4,7 +4,7 @@
 
 PHP implementace klienta pro webovou službu [GeisPoint](http://www.geispoint.cz/).
 
-> __For non-Czech visitors__: Since __GeisPoint__ web service is located in Czech Republic and serves mainly Czech users all documentation is written directly in Czech - anyway code self is commented in English.
+> __For non-Czech visitors__: Since __GeisPoint__ web service is located in Czech Republic and serves mainly Czech users all documentation is written directly in Czech (but code self is commented in English and examples are self-explanatory).
 
 
 ## Instalace
@@ -54,12 +54,58 @@ Počet výdejních míst: 2
 
 ### Konfigurace
 
-Konstruktor třídy `\GeisPointService\Service` přijíma jako jedinný argument pole s nastavením klienta. Možnosti konfigurace jsou následující:
+Konstruktor třídy `\GeisPointService\Service` přijíma jako jediný argument pole s nastavením klienta. Možnosti konfigurace jsou následující:
 
 #### Přehled nastavení
 
-__TBD__
+Pole s nastavením může obsahovat následující hodnoty:
+
+| Klíč             | Typ hodnoty | Popis
+|------------------|-------------|------------------
+| `defaultCountry` | `string`    | Defaultní země.
+| `defaultRegion`  | `integer`   | Defaultní region.
+| `useCache`       | `boolean`   | Pokud je `TRUE` je využita cache.
+| `usedCache`      | `string`    | Jméno třídy, která implementuje cache. Je možno využít vlastní třídu (implementující rozhraní `\GeisPointService\Cache\CacheInterface`) nebo jednu ze dvou předvytvořených (`\GeisPointService\Cache\DbCache` či `\GeisPointService\Cache\FileCache`).
+| `cacheOptions`   | `array`     | Viz. níže.
+
+##### Nastavení pro `\GeisPointService\Cache\FileCache`
+
+| Klíč             | Typ hodnoty | Popis
+|------------------|-------------|------------------
+| `path`           | `string`    | Cesta k souboru, který bude cache využívat.
+
+##### Nastavení pro `\GeisPointService\Cache\DbCache`
+
+Tato třída využíva pro připojení [PDO](http://php.net/manual/en/class.pdo.php). Z toho vyplývá i nastavení:
+
+| Klíč             | Typ hodnoty | Popis
+|------------------|-------------|------------------
+| `dsn`            | `string`    | Řetězec popisující nastavení spojení s databází.
+| `user`           | `string`    | Jméno uživatele pro spojení s databází.
+| `password`       | `string`    | Heslo uživatele pro spojení s databází.
+| `table`          | `string`    | Název tabulky.
+
+__Pozn.__ Pokud tabulka neexistuje, bude vytvořena.
 
 #### Příklad nastavení
 
-__TBD__
+Níže je příklad nastavení s využitím souborové cache:
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+$options = array(
+	'defaultCountry' => 'cz',
+	'defaultRegion' => 19,
+	'useCache' => true,
+	'usedCache' => '\GeisPointService\Cache\FileCache',
+	'cacheOptions' => array(
+		'path' => '/path/to/your/file'
+	)
+);
+
+$gpsrv = new \GeisPointService\Service($options);
+
+// ...
+```
