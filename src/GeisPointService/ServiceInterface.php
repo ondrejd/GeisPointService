@@ -47,7 +47,7 @@ interface ServiceInterface
 	 *
 	 * @param string $zip
 	 * @param string $city
-	 * @param string $gpId
+	 * @param string $gpid
 	 * @return array
 	 * @throws \InvalidArgumentException
 	 */
