@@ -70,6 +70,8 @@ Pole s nastavením může obsahovat následující hodnoty:
 
 ##### Nastavení pro `\GeisPointService\Cache\FileCache`
 
+Tento typ cache je velmi jednoduchý - používá soubor, do kterého se ukládají data pomocí funkce [`serialize`](http://php.net/manual/en/function.serialize.php) a který se následně čte pomocí funkce  [`unserialize`](http://php.net/manual/en/function.unserialize.php). Možnosti nastavení obsahují čistě jen cestu k souboru:
+
 | Klíč             | Typ hodnoty | Popis
 |------------------|-------------|------------------
 | `path`           | `string`    | Cesta k souboru, který bude cache využívat.
