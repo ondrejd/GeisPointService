@@ -1,3 +1,5 @@
 nbproject/private
 vendor
 test.php
+cache.tmp
+
