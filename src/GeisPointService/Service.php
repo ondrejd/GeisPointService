@@ -52,36 +52,88 @@ class Service implements ServiceInterface
 	protected $client;
 
 	/**
-	 * @var array $cache
+	 * @var Cache\CacheInterface $cache
 	 */
 	protected $cache;
 
 	/**
-	 * Konstruktor.
+	 * @var boolean $useCache
+	 */
+	protected $useCache;
+
+	/**
+	 * Constructor.
 	 *
 	 * @param array $options
 	 * @return void
 	 */
 	public function __construct($options = array())
 	{
-		$this->defaultCountry = (isset($options['defaultCountry']))
-				? $options['defaultCountry']
-				: self::DEFAULT_COUNTRY;
+		$opts = $this->normalizeOptions($options);
 
-		$this->defaultRegion = (isset($options['defaultRegion']))
-				? $options['defaultCity']
-				: self::DEFAULT_REGION;
+		$this->defaultCountry = $opts['defaultCountry'];
+		$this->defaultRegion = $opts['defaultRegion'];
+		$this->useCache = $opts['useCache'];
 
-		// TODO Cache!
-		if (array_key_exists('cache', $options)) {
-			// ...
+		if ($this->useCache === true) {
+			$this->initCache($opts);
 		}
 
 		$this->client = new \SoapClient(self::URL);
 	}
 
 	/**
-	 * Vrati posledni chybu.
+	 * Normalizes array with service options.
+	 *
+	 * @param array $options
+	 * @return array
+	 */
+	protected function normalizeOptions(array $options)
+	{
+		if (!array_key_exists('defaultCountry', $options)) {
+			$options['defaultCountry'] = self::DEFAULT_COUNTRY;
+		}
+
+		if (!array_key_exists('defaultRegion', $options)) {
+			$options['defaultRegion'] = self::DEFAULT_REGION;
+		}
+
+		if (!array_key_exists('useCache', $options)) {
+			$options['useCache'] = false;
+		}
+
+		if (!array_key_exists('usedCache', $options)) {
+			$options['usedCache'] = null;
+		}
+
+		if (!array_key_exists('cacheOptions', $options)) {
+			$options['cacheOptions'] = array();
+		}
+
+		if (!is_array($options['cacheOptions'])) {
+			throw new Exception('Invalid value for options key `cacheOptions`!');
+		}
+
+		return $options;
+	}
+
+	/**
+	 * Initializes cache.
+	 *
+	 * @param array $options
+	 * @return void
+	 */
+	protected function initCache(array $options)
+	{
+		if (!class_exists($options['usedCache'], true)) {
+			throw new Exception('Class defined in `usedCache` does not exist!');
+		}
+
+		$this->cache = new $options['usedCache']($options['cacheOptions']);
+	}
+
+	/**
+	 * Returns message of the latest error.
 	 *
 	 * @return string|null
 	 */
@@ -95,7 +147,6 @@ class Service implements ServiceInterface
 	 *
 	 * @param string $country (Optional.)
 	 * @return array
-	 * @todo Add cache!
 	 */
 	public function getRegions($country = null)
 	{
@@ -103,19 +154,28 @@ class Service implements ServiceInterface
 			? $this->defaultCountry
 			: $country;
 
-		$arguments = array('country_code' => $country);
-
-		$json = $this->client->__soapCall('getRegions', $arguments);
-		$data = json_decode($json);
-		$ret = array();
-
-		foreach ($data as $itm) {
-			if (is_object($itm)) {
-				$ret[] = new Region($itm);
+		if ($this->useCache === true) {
+			if ($this->cache->exists($country)) {
+				return $this->cache->get($country);
 			}
 		}
 
-		return $ret;
+		$arguments = array('country_code' => $country);
+		$json = $this->client->__soapCall('getRegions', $arguments);
+		$data = json_decode($json);
+		$regions = array();
+
+		foreach ($data as $itm) {
+			if (is_object($itm)) {
+				$regions[] = new Region($itm);
+			}
+		}
+
+		if ($this->useCache === true) {
+			$this->cache->set($country, $regions);
+		}
+
+		return $regions;
 	}
 
 	/**
@@ -135,19 +195,30 @@ class Service implements ServiceInterface
 			? $this->defaultRegion
 			: $region;
 
-		$arguments = array('country_code' => $country, 'id_region' => $region);
+		$cacheKey = $country . '_' . $region;
 
-		$json = $this->client->__soapCall('getCities', $arguments);
-		$data = json_decode($json);
-		$ret = array();
-
-		foreach ($data as $itm) {
-			if (is_object($itm)) {
-				$ret[] = new City($itm);
+		if ($this->useCache === true) {
+			if ($this->cache->exists($cacheKey)) {
+				return $this->cache->get($cacheKey);
 			}
 		}
 
-		return $ret;
+		$arguments = array('country_code' => $country, 'id_region' => $region);
+		$json = $this->client->__soapCall('getCities', $arguments);
+		$data = json_decode($json);
+		$cities = array();
+
+		foreach ($data as $itm) {
+			if (is_object($itm)) {
+				$cities[] = new City($itm);
+			}
+		}
+
+		if ($this->useCache === true) {
+			$this->cache->set($cacheKey, $cities);
+		}
+
+		return $cities;
 	}
 
 	/**
@@ -167,12 +238,24 @@ class Service implements ServiceInterface
 			throw new \InvalidArgumentException();
 		}
 
+		if ($this->useCache === true) {
+			if ($this->cache->exists($gpid)) {
+				return $this->cache->get($gpid);
+			}
+		}
+
 		$arguments = array('id_gp' => (string) $gpid);
 		$json = $this->client->__soapCall('getGPDetail', $arguments);
 		$data = json_decode($json);
 
 		if (count($data) === 1) {
-			return new Point($data[0]);
+			$point = new Point($data[0]);
+
+			if ($this->useCache === true) {
+				$this->cache->set($gpid, $point);
+			}
+
+			return $point;
 		}
 
 		throw new Exception('GeisPoint details was not found!');
@@ -186,6 +269,7 @@ class Service implements ServiceInterface
 	 * @param string $gpid
 	 * @return array
 	 * @throws \InvalidArgumentException
+	 * @todo Also this method should be cached!
 	 */
 	public function searchPoints($zip, $city, $gpid)
 	{
@@ -214,14 +298,14 @@ class Service implements ServiceInterface
 
 		$json = $this->client->__soapCall('searchGP', $arguments);
 		$data = json_decode($json);
-		$ret = array();
+		$points = array();
 
 		foreach ($data as $itm) {
 			if (is_object($itm)) {
-				$ret[] = new Point($itm);
+				$points[] = new Point($itm);
 			}
 		}
 
-		return $ret;
+		return $points;
 	}
 }
