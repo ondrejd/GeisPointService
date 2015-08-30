@@ -85,9 +85,14 @@ Tato třída využíva pro připojení [PDO](http://php.net/manual/en/class.pdo.
 | `dsn`            | `string`    | Řetězec popisující nastavení spojení s databází.
 | `user`           | `string`    | Jméno uživatele pro spojení s databází.
 | `password`       | `string`    | Heslo uživatele pro spojení s databází.
-| `table`          | `string`    | Název tabulky.
+| `prefix`         | `string`    | Prefix pro názvy jednotlivých tabulek.
+| `schema`         | `string`    | Typ použitého schématu (může být buď `extended` nebo `simple`).
 
-__Pozn.__ Pokud tabulka neexistuje, bude vytvořena.
+__Pozn.__: Pokud je `schema` rovno `simple`, pak se data ukládají do jedné tabulky pojmenované `{$prefix}_gpcache`. V případě použití typu `extended` jsou data rozmístěna do tří tabulek, které odpovídají jednotlivým datovým typům (`\GeisPointService\Region`, `\GeisPointService\City` a `\GeisPointService\Point`). Viz. následující diagram:
+
+![Schéma pro databázovou cache](https://raw.githubusercontent.com/ondrejd/GeisPointService/master/cache-dbschema.png)
+
+Pokud bude použité nastavení prázdné pole, defaultně se nastaví SQLite databáze (soubor `cache.sqlite` a typ použitého schématu bude `simple`).
 
 #### Příklad nastavení
 
@@ -110,4 +115,39 @@ $options = array(
 $gpsrv = new \GeisPointService\Service($options);
 
 // ...
+```
+
+
+## Klient pro `GeisPointService`
+
+Součástí implementace služby je i klient, který usnadňuje její použití. Umožňuje snadné vytvoření [CRON](https://en.wikipedia.org/wiki/Cron) skriptu pro pravidelné načítání potřebných dat (typicky každý den načteme všechny _GP_ (a související data) pro Českou Republiku a tím šetříme čas potřebný k přímému dotazování) a skriptu, který vrací [JSON](http://json.org/) pro použití v dynamických formulářích (typicky nákupní košík).
+
+### Použití klientské části
+
+Nejprve jednoduchý skript, který je možno použít pro každodenní aktualizaci kompletních dat (přes `CRON`). U tohoto použití __musí__ služba využívat cache.
+
+```php
+<?php
+require 'vendor/autoload.php';
+
+$client = new GeisPointService\Client\Client(array(
+	'defaultCountry' => 'cz',
+	'defaultRegion' => 19,
+	'useCache' => true,
+	'usedCache' => '\GeisPointService\Cache\FileCache',
+	'cacheOptions' => array(
+		'path' => '/path/to/your/file'
+	)
+));
+$client = $client->loadAll();
+```
+
+Nyní si ukážeme příklad skriptu, který lze použít pro dynamické formuláře (pomocí formátu `JSON`):
+
+```php
+<?php
+require `vendor/autoload.php`;
+
+// TBD...
+
 ```
