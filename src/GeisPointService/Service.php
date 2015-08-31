@@ -154,9 +154,11 @@ class Service implements ServiceInterface
 			? $this->defaultCountry
 			: $country;
 
+		$cacheKey = 'region|' . $country;
+
 		if ($this->useCache === true) {
-			if ($this->cache->exists($country)) {
-				return $this->cache->get($country);
+			if ($this->cache->exists($cacheKey)) {
+				return $this->cache->get($cacheKey);
 			}
 		}
 
@@ -172,7 +174,7 @@ class Service implements ServiceInterface
 		}
 
 		if ($this->useCache === true) {
-			$this->cache->set($country, $regions);
+			$this->cache->set($cacheKey, $regions);
 		}
 
 		return $regions;
@@ -195,7 +197,7 @@ class Service implements ServiceInterface
 			? $this->defaultRegion
 			: $region;
 
-		$cacheKey = $country . '_' . $region;
+		$cacheKey = 'city|' . $region;
 
 		if ($this->useCache === true) {
 			if ($this->cache->exists($cacheKey)) {
@@ -238,9 +240,11 @@ class Service implements ServiceInterface
 			throw new \InvalidArgumentException();
 		}
 
+		$cacheKey = 'point|' . $gpid;
+
 		if ($this->useCache === true) {
-			if ($this->cache->exists($gpid)) {
-				return $this->cache->get($gpid);
+			if ($this->cache->exists($cacheKey)) {
+				return $this->cache->get($cacheKey);
 			}
 		}
 
@@ -252,7 +256,7 @@ class Service implements ServiceInterface
 			$point = new Point($data[0]);
 
 			if ($this->useCache === true) {
-				$this->cache->set($gpid, $point);
+				$this->cache->set($cacheKey, $point);
 			}
 
 			return $point;
