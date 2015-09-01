@@ -2,4 +2,7 @@ nbproject/private
 vendor
 test.php
 cache.tmp
+cache.sqlite
+test/cache*.tmp
+test/cache*.sqlite
 
