@@ -12,11 +12,6 @@
 			"role": "Developer"
 		}
 	],
-	"repositories": [{
-		"type": "vcs",
-		"url": "https://github.com/ondrejd/GeisPointService"
-	}],
-	"minimum-stability": "stable",
 	"autoload": {
 		"psr-0": {
 			"GeisPointService\\": "src/GeisPointService/"
