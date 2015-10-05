@@ -9,7 +9,15 @@ PHP implementace klienta pro webovou službu [GeisPoint](http://www.geispoint.cz
 
 ## Instalace
 
-__TBD__
+Buď můžete stáhnout zdrojové kódy přímo zde z repozitáře nebo použít [Composer](https://https://getcomposer.org/) - stačí do vyjmenovaných závislostí v souboru `composer.json` přidat tento záznam:
+
+```json
+{
+	"require": {
+		"ondrejd/geis-point-service": "dev-master"
+	}
+}
+```
 
 ## Použití
 
